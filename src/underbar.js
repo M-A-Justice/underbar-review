@@ -167,20 +167,33 @@
   //     return total + number * number;
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
-  _.reduce = function(collection, iterator, accumulator) {
-  /*
+    /*
   - if accumulator was not passed in, set accumulator to collection[0]
   - Run the collection through forEach
     - For each element, reassign the accumulator to the value return by passing the accumulator and the current element to the iterator function
   */
+
+   // function(collection, accumulator)
+
+  _.reduce = function(collection, iterator, accumulator) {
+    var init = arguments.length === 2;
     _.each(collection, function(element) {
-      if (accumulator === undefined) {
+      if (init) {
+        init = false;
         accumulator = element;
       } else {
-
         accumulator = iterator(accumulator, element);
       }
     });
+    // _.each(collection, function(element) {
+    //   if (accumulator === undefined) {
+    //     accumulator = element;
+    //   } else {
+
+    //     accumulator = iterator(accumulator, element);
+    //   }
+    // });
+    // return accumulator;
     return accumulator;
   };
 
@@ -252,11 +265,33 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    /*
+      - use each to loop through the input object
+      - For each key-value pair, assign it to the object being extended
+      - Return extended object
+    */
+    var destination = arguments[0];
+
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      Object.assign(destination, source);
+    }
+    return destination;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var destination = arguments[0];
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (obj[key] === undefined) {
+          obj[key] = source[key];
+        }
+      }
+    }
+    return obj;
   };
 
 
@@ -300,6 +335,14 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var storage = {};
+    return function() {
+      var stored = JSON.stringify(arguments);
+      if (!storage.hasOwnProperty(stored)) {
+        storage[stored] = func.apply(this, arguments);
+      }
+      return storage[stored];
+    }
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -309,6 +352,8 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    setTimeout(function() { func.apply(null, args) }, wait);
   };
 
 
@@ -323,6 +368,16 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var copy = array.slice();
+    var result = [];
+    array.forEach(function(element) {
+      var min = Math.ceil(copy[0]);
+      var max = Math.floor(copy.length - 1);
+      var random = Math.random() * (max - min + 1);
+      var spliced = copy.splice(random - 1, 1)[0];
+      result.push(spliced);
+    });
+    return result;
   };
 
 
